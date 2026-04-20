@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="format-detection" content="telephone=no">
+</head>
+<body>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --g-cobalt: #1A3F7A;
+  --g-mid:    #2E5FA3;
+  --g-light:  #5B8DD9;
+  --g-pale:   #C8D9F5;
+  --g-wash:   #EEF3FC;
+  --g-white:  #FAFCFF;
+  --g-ink:    #0D1F3C;
+  --g-muted:  #3A5A8A;
+  --g-purple: #4A1A6E;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--g-white);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--g-ink);
+}
+
+.wrap { padding: 16px; }
+
+/* ── ГЖЕЛЕВЫЙ БОРДЮР — чистый CSS, никакого SVG ── */
+.gzhel-border {
+  width: 100%;
+  height: 8px;
+  margin: 10px 0 16px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--g-cobalt)  0px,  var(--g-cobalt)  12px,
+    var(--g-light)   12px, var(--g-light)   20px,
+    var(--g-pale)    20px, var(--g-pale)    28px,
+    var(--g-light)   28px, var(--g-light)   36px,
+    var(--g-cobalt)  36px, var(--g-cobalt)  48px,
+    var(--g-wash)    48px, var(--g-wash)    56px
+  );
+  border-radius: 4px;
+  opacity: 0.8;
+}
+.gzhel-border.thin {
+  height: 5px;
+  opacity: 0.45;
+  margin: 6px 0 14px;
+}
+
+/* ── ВКЛАДКИ ── */
+.tabs {
+  display: -webkit-flex;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 9px 20px;
+  border: 2px solid var(--g-pale);
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--g-wash);
+  color: var(--g-mid);
+  -webkit-transition: all 0.18s;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+.tab.active {
+  background: var(--g-cobalt);
+  color: #fff;
+  border-color: var(--g-cobalt);
+}
+.tab-summary.active {
+  background: var(--g-ink);
+  border-color: var(--g-ink);
+}
+
+/* ── VIEWS ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── СЕТКА КАРТОЧЕК ── */
+.grid {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.card {
+  background: var(--g-white);
+  border: 1.5px solid var(--g-pale);
+  border-radius: 14px;
+  padding: 16px 16px 18px;
+  position: relative;
+  overflow: hidden;
+  -webkit-flex: 1 1 280px;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+/* Полоска сверху — CSS градиент, без SVG */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg,
+    var(--g-cobalt) 0%, var(--g-light) 40%,
+    var(--g-pale) 60%, var(--g-light) 80%,
+    var(--g-cobalt) 100%);
+  border-radius: 14px 14px 0 0;
+}
+.card.boss { border: 2px solid var(--g-cobalt); }
+.card.boss::before {
+  height: 6px;
+  background: linear-gradient(90deg,
+    var(--g-ink) 0%, var(--g-cobalt) 30%,
+    var(--g-light) 60%, var(--g-cobalt) 80%,
+    var(--g-ink) 100%);
+}
+
+.card-head {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  gap: 10px; margin-bottom: 10px; margin-top: 6px;
+}
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
+  font-size: 14px; font-weight: 500;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
+  border: 2px solid var(--g-pale);
+}
+.name  { font-size: 17px; font-weight: 500; color: var(--g-ink); }
+.role  { font-size: 14px; color: var(--g-muted); margin-top: 2px; line-height: 1.4; }
+
+.tag {
+  display: inline-block;
+  font-size: 13px; padding: 3px 9px;
+  border-radius: 12px; margin: 2px 2px 0 0;
+}
+
+/* Метки секций — цветочек через unicode вместо SVG */
+.section-label {
+  font-size: 12px; color: var(--g-muted);
+  margin-bottom: 5px; margin-top: 10px;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  gap: 6px;
+}
+.section-label::before {
+  content: '✿';
+  font-size: 14px;
+  color: var(--g-light);
+  line-height: 1;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+
+.badge {
+  font-size: 13px; padding: 3px 8px;
+  border-radius: 10px;
+  background: var(--g-wash); color: var(--g-muted);
+  border: 1px solid var(--g-pale);
+  margin: 2px 2px 0 0; display: inline-block;
+}
+.rep-badge {
+  font-size: 13px; padding: 3px 8px;
+  border-radius: 10px; margin: 2px 2px 0 0;
+  display: inline-block; border: 1px solid;
+}
+.process-tag { font-size: 12px; color: var(--g-muted); margin-left: 2px; }
+
+.time-block {
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+  gap: 4px; margin-top: 8px; padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--g-wash); border: 1px solid var(--g-pale);
+  font-size: 14px;
+}
+.time-row {
+  display: -webkit-flex; display: flex;
+  gap: 8px; -webkit-align-items: baseline; align-items: baseline;
+}
+.time-day { color: var(--g-muted); min-width: 88px; font-size: 13px; }
+.time-val  { font-weight: 500; color: var(--g-ink); }
+
+.avail-block {
+  margin-top: 8px; padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--g-wash); border: 1.5px solid var(--g-pale);
+  font-size: 13px; color: var(--g-cobalt); line-height: 1.75;
+}
+
+/* ── ТАБЛИЦЫ ── */
+.card-table-wrap {
+  background: var(--g-white);
+  border: 1.5px solid var(--g-pale);
+  border-radius: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+.card-table-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 5px;
+  background: linear-gradient(90deg,
+    var(--g-cobalt) 0%, var(--g-light) 40%,
+    var(--g-pale) 60%, var(--g-light) 80%,
+    var(--g-cobalt) 100%);
+  border-radius: 14px 14px 0 0;
+}
+
+.sched-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.sched-table th {
+  text-align: left; padding: 11px 13px;
+  border-bottom: 1.5px solid var(--g-pale);
+  color: var(--g-muted); font-weight: 500; font-size: 13px;
+  background: var(--g-wash); white-space: nowrap;
+}
+.sched-table td {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--g-wash);
+  color: var(--g-ink);
+}
+.sched-table tr:last-child td { border-bottom: none; }
+.sched-section {
+  font-size: 13px; font-weight: 500; color: var(--g-cobalt);
+  padding: 9px 13px 5px;
+  background: var(--g-wash);
+  border-bottom: 1px solid var(--g-pale);
+  border-top: 1px solid var(--g-pale);
+  letter-spacing: 0.04em;
+}
+.sched-section::before { content: '✿  '; font-size: 11px; color: var(--g-light); }
+
+.pill {
+  display: inline-block; font-size: 13px;
+  padding: 3px 9px; border-radius: 12px;
+  white-space: nowrap; border: 1px solid transparent;
+}
+.pill-52   { background: #E8F0FC; color: var(--g-cobalt); border-color: var(--g-pale); }
+.pill-22   { background: #D6E6FC; color: var(--g-mid);    border-color: #A8C4F0; }
+.pill-wknd { background: #C8D9F5; color: var(--g-cobalt); border-color: var(--g-mid); }
+.pill-boss { background: var(--g-cobalt); color: #fff;    border-color: var(--g-cobalt); }
+
+.rep-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.rep-table th {
+  text-align: left; padding: 11px 13px;
+  border-bottom: 1.5px solid var(--g-pale);
+  color: var(--g-muted); font-weight: 500; font-size: 13px;
+  background: var(--g-wash); white-space: nowrap;
+}
+.rep-table td {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--g-wash);
+  vertical-align: top;
+}
+.rep-table tr:last-child td { border-bottom: none; }
+
+/* ── РЕЗЮМЕ ── */
+.summary-header {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: space-between; justify-content: space-between;
+  margin-bottom: 6px; -webkit-flex-wrap: wrap; flex-wrap: wrap; gap: 8px;
+}
+.summary-title-label { font-size: 14px; color: var(--g-muted); margin: 0 0 3px; }
+.summary-title { font-size: 24px; font-weight: 500; margin: 0; color: var(--g-ink); }
+.summary-date {
+  font-size: 14px; color: var(--g-cobalt);
+  background: var(--g-wash); padding: 4px 13px;
+  border-radius: 20px; border: 1.5px solid var(--g-pale);
+  white-space: nowrap;
+}
+
+.task-list { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; gap: 10px; }
+
+.task-card {
+  background: var(--g-white);
+  border: 1.5px solid var(--g-pale);
+  border-radius: 12px;
+  padding: 13px 16px 13px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.task-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0; width: 5px;
+  border-radius: 12px 0 0 12px;
+}
+.task-card.tc-red::before    { background: #C0392B; }
+.task-card.tc-blue::before   { background: var(--g-cobalt); }
+.task-card.tc-green::before  { background: #1A5C3A; }
+.task-card.tc-purple::before { background: var(--g-purple); }
+.task-card.tc-note { background: var(--g-wash); border-color: var(--g-pale); }
+.task-card.tc-note::before { display: none; }
+
+.task-row {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: space-between; justify-content: space-between;
+  margin-bottom: 6px; gap: 8px;
+}
+.task-name { font-size: 16px; font-weight: 500; color: var(--g-ink); margin: 0; }
+.task-badge {
+  font-size: 12px; padding: 3px 9px; border-radius: 20px;
+  font-weight: 500; white-space: nowrap; -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+.badge-priority { background: #F5E0E0; color: #8B1A1A; border: 1px solid #E9A0A0; }
+.badge-ready    { background: var(--g-wash); color: var(--g-cobalt); border: 1px solid var(--g-pale); }
+.task-desc { font-size: 14px; color: var(--g-muted); margin: 0; line-height: 1.65; }
+
+/* ── ТЁМНАЯ ТЕМА ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --g-cobalt: #4A7FD4;
+    --g-mid:    #6A9FE8;
+    --g-light:  #90BBF5;
+    --g-pale:   #1E3260;
+    --g-wash:   #111D36;
+    --g-white:  #0C1525;
+    --g-ink:    #D6E8FF;
+    --g-muted:  #7BA3D8;
+  }
+  body { background: var(--g-white); }
+  .card, .card-table-wrap, .task-card { background: #0F1C35; }
+  .task-card.tc-note { background: var(--g-wash); }
+  .tab { background: var(--g-wash); color: var(--g-mid); border-color: var(--g-pale); }
+  .tab.active { background: var(--g-cobalt); color: #fff; border-color: var(--g-cobalt); }
+  .tab-summary.active { background: #2E5FA3; border-color: #2E5FA3; }
+  .sched-table th, .rep-table th, .sched-section { background: var(--g-wash); }
+  .avail-block { background: var(--g-wash); color: var(--g-mid); }
+  .time-block { background: var(--g-wash); }
+  .badge { background: var(--g-wash); }
+  .pill-52   { background: #1A2F5C; color: #90BBF5; border-color: var(--g-pale); }
+  .pill-22   { background: #112240; color: #6A9FE8; border-color: var(--g-pale); }
+  .pill-wknd { background: var(--g-pale); color: var(--g-light); border-color: var(--g-mid); }
+  .pill-boss { background: var(--g-cobalt); color: #fff; border-color: var(--g-cobalt); }
+  .badge-priority { background: #2E0F0F; color: #EF9A9A; border-color: #7B2020; }
+  .badge-ready    { background: var(--g-wash); color: var(--g-light); border-color: var(--g-pale); }
+  .summary-date   { background: var(--g-wash); color: var(--g-mid); }
+}
+</style>
+
+<div class="wrap">
+  <h2 class="sr-only">Структура офиса HR-отдела</h2>
+
+  <!-- орнамент: inline SVG — рендерится везде одинаково -->
+  <svg width="100%" height="28" viewBox="0 0 600 28" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-bottom:14px;opacity:.8">
+    <path d="M0 14 Q25 4 50 14 Q75 24 100 14 Q125 4 150 14 Q175 24 200 14 Q225 4 250 14 Q275 24 300 14 Q325 4 350 14 Q375 24 400 14 Q425 4 450 14 Q475 24 500 14 Q525 4 550 14 Q575 24 600 14" stroke="#2E5FA3" stroke-width="1.5" fill="none"/>
+    <circle cx="50"  cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="50"  cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="43"  cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="57"  cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="43"  cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="57"  cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <circle cx="150" cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="150" cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="143" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="157" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="143" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="157" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <circle cx="250" cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="250" cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="243" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="257" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="243" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="257" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <circle cx="350" cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="350" cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="343" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="357" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="343" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="357" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <circle cx="450" cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="450" cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="443" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="457" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="443" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="457" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <circle cx="550" cy="14" r="5" fill="#5B8DD9" opacity=".85"/><circle cx="550" cy="14" r="2.2" fill="#1A3F7A"/>
+    <circle cx="543" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/><circle cx="557" cy="9"  r="2.8" fill="#5B8DD9" opacity=".7"/>
+    <circle cx="543" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/><circle cx="557" cy="19" r="2.8" fill="#2E5FA3" opacity=".6"/>
+    <ellipse cx="100" cy="8"  rx="4.5" ry="2.5" fill="#2E5FA3" opacity=".45" transform="rotate(-20 100 8)"/>
+    <ellipse cx="200" cy="20" rx="4.5" ry="2.5" fill="#5B8DD9" opacity=".4"  transform="rotate(20 200 20)"/>
+    <ellipse cx="300" cy="8"  rx="4.5" ry="2.5" fill="#2E5FA3" opacity=".45" transform="rotate(-20 300 8)"/>
+    <ellipse cx="400" cy="20" rx="4.5" ry="2.5" fill="#5B8DD9" opacity=".4"  transform="rotate(20 400 20)"/>
+    <ellipse cx="500" cy="8"  rx="4.5" ry="2.5" fill="#2E5FA3" opacity=".45" transform="rotate(-20 500 8)"/>
+  </svg>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show('cards',this)">Сотрудники</button>
+    <button class="tab" onclick="show('schedule',this)">График</button>
+    <button class="tab" onclick="show('replace',this)">Замены</button>
+    <button class="tab tab-summary" onclick="show('summary',this)">Резюме встречи</button>
+  </div>
+
+  <div class="gzhel-border thin"></div>
+
+  <!-- КАРТОЧКИ -->
+  <div class="view active" id="view-cards">
+    <div class="grid" id="cards-grid"></div>
+  </div>
+
+  <!-- ГРАФИК -->
+  <div class="view" id="view-schedule">
+    <div class="card-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>Сотрудник</th><th>График</th><th>Время работы</th><th>Перерыв / Связь</th></tr></thead>
+        <tbody id="sched-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ЗАМЕНЫ -->
+  <div class="view" id="view-replace">
+    <div class="card-table-wrap">
+      <table class="rep-table">
+        <thead><tr><th>Сотрудник</th><th>Кто заменяет его</th><th>Кого сам заменяет</th></tr></thead>
+        <tbody id="rep-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- РЕЗЮМЕ -->
+  <div class="view" id="view-summary">
+    <div class="summary-header">
+      <div>
+        <p class="summary-title-label">Итоги встречи</p>
+        <h2 class="summary-title">Резюме по задачам</h2>
+      </div>
+      <span class="summary-date">Апрель 2026</span>
+    </div>
+
+    <div class="gzhel-border thin"></div>
+
+    <div class="task-list">
+      <div class="task-card tc-red">
+        <div class="task-row">
+          <p class="task-name">Квартет вкусов</p>
+          <span class="task-badge badge-priority">Приоритет</span>
+        </div>
+        <p class="task-desc">Запланировать встречу на май — предварительно согласовать с Александром.</p>
+      </div>
+      <div class="task-card tc-blue">
+        <p class="task-name" style="margin-bottom:6px">Пекарня</p>
+        <p class="task-desc">Обновить ставки, довести до сотрудников. Проработать варианты развития направления.</p>
+      </div>
+      <div class="task-card tc-blue">
+        <p class="task-name" style="margin-bottom:6px">Фабрика вкусов</p>
+        <p class="task-desc">Связаться с Егором.</p>
+      </div>
+      <div class="task-card tc-blue">
+        <p class="task-name" style="margin-bottom:6px">Корпоратив</p>
+        <p class="task-desc">Передать информацию коллегам. Юля собирает точный список — далее смотрим цены на билеты.</p>
+      </div>
+      <div class="task-card tc-green">
+        <div class="task-row">
+          <p class="task-name">Веб-приложение</p>
+          <span class="task-badge badge-ready">Готово к запуску</span>
+        </div>
+        <p class="task-desc">Выплаты и лувры — можно запускать. С учётом ситуации с мессенджерами — предлагаю стартовать с пилотного объекта.</p>
+      </div>
+      <div class="task-card tc-blue">
+        <p class="task-name" style="margin-bottom:6px">Работа с заявками</p>
+        <p class="task-desc">Дима завершит до конца недели. Процесс идёт вне рабочего времени, отсюда небольшой сдвиг по срокам.</p>
+      </div>
+      <div class="task-card tc-blue">
+        <p class="task-name" style="margin-bottom:6px">Медицинские книжки</p>
+        <p class="task-desc">Нужны адреса, контакты и виды направлений. Уточнить информацию по Хабаровску — возможность оформления за счёт работодателя.</p>
+      </div>
+      <div class="task-card tc-purple">
+        <p class="task-name" style="margin-bottom:6px">Активности с сотрудниками</p>
+        <p class="task-desc">Механика с группами и реферальными ссылками — хорошая идея, прорабатываем. Конкурс рисунков — провести 1 июня или 1 мая (Мир! Труд! Май!).</p>
+      </div>
+      <div class="task-card tc-note">
+        <p class="task-desc">На форум — подъеду к 11:00.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+var ME = {
+  name:"Новгородова Анна", role:"Региональный менеджер",
+  color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C",
+  schedGroup:"Руководство", sched:"гибкий",
+  skills:["Управление командой","Региональный контроль","Координация всех процессов","Замена любого сотрудника"],
+  tags:["Региональный менеджер"],
+  replacedBy:[{name:"Слюсаренко Юлия",note:"территориальный менеджер"}],
+  replaces:"all"
+};
+
+var people = [
+  { name:"Слюсаренко Юлия", role:"Территориальный менеджер", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Управление командой","Территориальный контроль","Координация регионов","Стратегическое планирование"], tags:["Руководитель"], replacedBy:[{name:"Новгородова Анна",note:"взаимозамена"}], replaces:[{name:"Новгородова Анна",note:"взаимозамена"},{name:"Мороз Татьяна",note:"оформление"},{name:"Макаренко Евгения",note:"сверка"},{name:"Слюсаренко Анна",note:"выплаты"},{name:"Елушкина Лина",note:"выплаты"}] },
+  { name:"Гайдайчук Диана", role:"Специалист по учёту персонала", color:"#2E5FA3", bg:"#EEF3FC", textc:"#1A3F7A", schedGroup:"5/2 — основная группа", sched:"5/2", time:"07:00–14:30", brk:"12:00–13:00", skills:["Учёт персонала","Кадровое делопроизводство","Табель","Сверка выходов"], tags:["Учёт"], replacedBy:[{name:"Ушмаркина Валерия",note:"сверка выходов"},{name:"Денисова Ксения",note:"сверка выходов"},{name:"Лыщицкая Александрина",note:"сверка выходов"},{name:"Мифтахов Виктор",note:"сверка выходов"},{name:"Новгородова Анна",note:""}], replaces:[] },
+  { name:"Галиновская Эльвира", role:"Менеджер по работе с персоналом (дежурный по всем объектам)", color:"#1A5C3A", bg:"#D7EEE3", textc:"#0F3D26", schedGroup:"Прочие графики", sched:"5/2 + вых.", time:"пн–пт 10:00–17:00 / сб 08:00–17:00 / вс 15:00–23:00", brk:"пн–сб 12:00–13:00 / вс 30 мин", skills:["Дежурство по всем объектам (вых.)","Вечернее дежурство","Консультирование сотрудников"], tags:["Выходные","Вечер"], replacedBy:[{name:"Мифтахов Виктор",note:"выходные"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Мифтахов Виктор",note:"выходные"},{name:"Слюсаренко Елена",note:"вечернее дежурство"},{name:"любой менеджер",note:"вывод / подбор"}] },
+  { name:"Денисова Ксения", role:"Менеджер по работе с персоналом (Комсомольск)", color:"#2E5FA3", bg:"#EEF3FC", textc:"#1A3F7A", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Сопровождение персонала","Комсомольск","Документооборот","Сверка выходов"], tags:["Комсомольск"], replacedBy:[{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Гайдайчук Диана",note:"сверка выходов"},{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"}] },
+  { name:"Евдокимова Наталья", role:"Менеджер по работе с персоналом (группы)", color:"#2E5FA3", bg:"#EEF3FC", textc:"#1A3F7A", schedGroup:"5/2 — основная группа", sched:"5/2", time:"13:00–20:00", brk:"12:00–13:00", skills:["Сопровождение групп персонала","Групповой документооборот","Взаимодействие с заказчиком"], tags:["Группы"], replacedBy:[{name:"Кружкова Анастасия",note:""},{name:"Слюсаренко Елена",note:""},{name:"Гайдайчук Диана",note:""},{name:"Ушмаркина Валерия",note:""},{name:"Новгородова Анна",note:""}], replaces:[{name:"Кружкова Анастасия",note:"частично, график отличается"}] },
+  { name:"Елушкина Лина", role:"Специалист по работе с 1С", color:"#1A3F7A", bg:"#D6E4F0", textc:"#0D1F3C", schedGroup:"2/2 — посменно", sched:"2/2", time:"08:00–20:00", brk:"11:30–12:00 / 17:10–18:00", skills:["1С:Зарплата и управление персоналом","Формирование отчётов в 1С","Процесс выплат"], tags:["1С","2/2"], replacedBy:[{name:"Слюсаренко Анна",note:"взаимозамена"},{name:"Удовиченко Сергей",note:"выплаты"},{name:"Мороз Дмитрий",note:"выплаты"},{name:"Мороз Татьяна",note:"выплаты"},{name:"Слюсаренко Юлия",note:"выплаты"},{name:"Ушмаркина Валерия",note:"выплаты"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Слюсаренко Анна",note:"взаимозамена"}] },
+  { name:"Слюсаренко Елена", role:"Специалист по работе с персоналом (вечерние смены)", color:"#1A5C3A", bg:"#D7EEE3", textc:"#0F3D26", schedGroup:"5/2 — основная группа", sched:"5/2", time:"18:00–23:00", brk:"—", skills:["Сопровождение вечерних смен","Консультирование сотрудников","Кадровый учёт смен"], tags:["Вечер"], replacedBy:[{name:"Галиновская Эльвира",note:"вечернее дежурство"},{name:"Новгородова Анна",note:""}], replaces:[] },
+  { name:"Кружкова Анастасия", role:"Менеджер по подбору персонала (Хабаровск)", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Рекрутинг","Интервью","Хабаровск","HeadHunter / Авито"], tags:["Подбор","Хабаровск"], replacedBy:[{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Евдокимова Наталья",note:""},{name:"любой менеджер",note:"подбор / вывод"},{name:"Слюсаренко Юлия",note:"частично"},{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Ушмаркина Валерия",note:"отклики / объявления"}] },
+  { name:"Лыщицкая Александрина", role:"Менеджер по работе с персоналом (Владивосток)", color:"#2E5FA3", bg:"#EEF3FC", textc:"#1A3F7A", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Сопровождение персонала","Владивосток","Документооборот","Отклики / объявления","Сверка выходов"], tags:["Владивосток"], replacedBy:[{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Мифтахов Виктор",note:"взаимозамена"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Гайдайчук Диана",note:"сверка выходов"},{name:"Курбатова Юлия",note:"офис, соискатели"},{name:"Ушмаркина Валерия",note:"отклики / объявления"}] },
+  { name:"Курбатова Юлия", role:"Менеджер по подбору персонала, ассистент", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Рекрутинг","Ассистирование","База кандидатов","Координация собеседований","Офисные дела"], tags:["Подбор","Ассистент"], replacedBy:[{name:"Лыщицкая Александрина",note:"офис, соискатели"},{name:"Новгородова Анна",note:""}], replaces:[] },
+  { name:"Макаренко Евгения", role:"Специалист по работе с заказчиком (Сверка)", color:"#4A1A6E", bg:"#E8D7F5", textc:"#2E0D47", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Сверка данных","Взаимодействие с заказчиком","Контроль расчётов","Документооборот"], tags:["Сверка","Заказчик"], replacedBy:[{name:"Новгородова Анна",note:"сверка"},{name:"Мороз Дмитрий",note:"сверка"},{name:"Мороз Татьяна",note:"сверка"},{name:"Слюсаренко Юлия",note:"сверка"}], replaces:[] },
+  { name:"Мифтахов Виктор", role:"Менеджер по работе с персоналом (Комсомольск)", color:"#1A5C3A", bg:"#D7EEE3", textc:"#0F3D26", schedGroup:"Прочие графики", sched:"5/2 + вых.", time:"пн–пт 08:00–17:00 / сб 14:00–23:00 / вс 08:00–17:00", brk:"12:00–13:00", skills:["Сопровождение персонала","Комсомольск","Приморский край","Выходные дежурства","Сверка выходов"], tags:["Комсомольск","Приморье","Выходные"], replacedBy:[{name:"Галиновская Эльвира",note:"выходные"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Галиновская Эльвира",note:"выходные"},{name:"Кружкова Анастасия",note:"взаимозамена"},{name:"Лыщицкая Александрина",note:"взаимозамена"},{name:"Денисова Ксения",note:"взаимозамена"},{name:"Гайдайчук Диана",note:"сверка выходов"}] },
+  { name:"Мороз Дмитрий", role:"Digital-менеджер (сеньор) + выплаты / сверка", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"Прочие графики", sched:"5/2", time:"12:00–21:00", brk:"12:00–13:00", skills:["Digital-маркетинг","Распределение персонала","Сверка данных","Автоматизация","Выплаты"], tags:["Digital","Сеньор","Сверка"], replacedBy:[{name:"Удовиченко Сергей",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Удовиченко Сергей",note:"взаимозамена"},{name:"Слюсаренко Анна",note:"выплаты"},{name:"Елушкина Лина",note:"выплаты"},{name:"Макаренко Евгения",note:"сверка"}] },
+  { name:"Мороз Татьяна", role:"Специалист по работе с персональными данными", color:"#1A5C3A", bg:"#D7EEE3", textc:"#0F3D26", schedGroup:"5/2 — основная группа", sched:"5/2", time:"09:00–18:00", brk:"12:00–13:00", skills:["Работа с персональными данными","Персональный документооборот","Процесс выплат","Сверка","Оформление"], tags:["Персональные данные"], replacedBy:[{name:"Слюсаренко Юлия",note:"оформление"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Слюсаренко Анна",note:"выплаты"},{name:"Елушкина Лина",note:"выплаты"},{name:"Макаренко Евгения",note:"сверка"}] },
+  { name:"Слюсаренко Анна", role:"Менеджер по работе с 1С", color:"#1A3F7A", bg:"#D6E4F0", textc:"#0D1F3C", schedGroup:"2/2 — посменно", sched:"2/2", time:"08:00–20:00", brk:"11:30–12:00 / 17:10–18:00", skills:["1С:Зарплата и управление персоналом","Настройка 1С","Обучение пользователей","Процесс выплат"], tags:["1С","2/2"], replacedBy:[{name:"Елушкина Лина",note:"взаимозамена"},{name:"Удовиченко Сергей",note:"выплаты"},{name:"Мороз Дмитрий",note:"выплаты"},{name:"Мороз Татьяна",note:"выплаты"},{name:"Слюсаренко Юлия",note:"выплаты"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Елушкина Лина",note:"взаимозамена"}] },
+  { name:"Удовиченко Сергей", role:"Digital-менеджер (джуниор) + выплаты", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"5/2 — основная группа", sched:"5/2", time:"08:00–17:00", brk:"12:00–13:00", skills:["Расчёт оплаты","ЛКП","1С","Google Таблицы","Возвраты","Процесс выплат"], tags:["Digital","Джуниор","Выплаты"], replacedBy:[{name:"Мороз Дмитрий",note:"взаимозамена"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Мороз Дмитрий",note:"взаимозамена"},{name:"Слюсаренко Анна",note:"выплаты"},{name:"Елушкина Лина",note:"выплаты"}] },
+  { name:"Ушмаркина Валерия", role:"HR-рекрутер", color:"#1A3F7A", bg:"#C8D9F5", textc:"#0D1F3C", schedGroup:"Прочие графики", sched:"5/2", time:"09:00–15:00", brk:"30 мин", skills:["Поиск кандидатов","Публикация вакансий","Первичное интервью","Отклики / объявления"], tags:["Рекрутинг"], replacedBy:[{name:"Лыщицкая Александрина",note:"отклики / объявления"},{name:"Кружкова Анастасия",note:"отклики / объявления"},{name:"Новгородова Анна",note:""}], replaces:[{name:"Гайдайчук Диана",note:"сверка выходов"},{name:"Слюсаренко Елена",note:"выплаты"}] }
+];
+
+var schedGroups = ["Руководство","5/2 — основная группа","2/2 — посменно","Прочие графики"];
+
+function initials(n){ return n.split(' ').slice(0,2).map(function(x){return x[0];}).join(''); }
+function pillClass(s){ if(s==="2/2") return "pill pill-22"; if(s==="гибкий") return "pill pill-boss"; if(s.indexOf("вых")>-1) return "pill pill-wknd"; return "pill pill-52"; }
+function repBadge(item,bg,textc){ return '<span class="rep-badge" style="background:'+bg+';color:'+textc+';border-color:'+textc+'60">'+item.name+(item.note?'<span class="process-tag"> · '+item.note+'</span>':'')+'</span>'; }
+
+function renderCards(){
+  var grid = document.getElementById('cards-grid');
+  var html = '<div class="card boss">'
+    +'<div class="card-head">'
+    +'<div class="avatar" style="background:'+ME.bg+';color:'+ME.textc+';border-color:var(--g-cobalt)">'+initials(ME.name)+'</div>'
+    +'<div><div class="name">'+ME.name+'</div><div class="role">'+ME.role+'</div></div>'
+    +'</div>'
+    +'<div>'+ME.tags.map(function(t){ return '<span class="tag" style="background:'+ME.bg+';color:'+ME.textc+';border:1px solid '+ME.textc+'40">'+t+'</span>'; }).join('')+'<span class="pill pill-boss" style="margin-left:4px">гибкий</span></div>'
+    +'<div class="time-block">'
+    +'<div class="time-row"><span class="time-day">Пн, Ср, Пт</span><span class="time-val">12:00–22:00</span></div>'
+    +'<div class="time-row"><span class="time-day">Вт, Чт</span><span class="time-val">10:00–19:00</span></div>'
+    +'<div class="time-row"><span class="time-day">Сб, Вс</span><span class="time-val">11:00–17:00</span></div>'
+    +'</div>'
+    +'<div class="avail-block">📞 На связи 08:00–23:00 (звонок)<br>✉️ Письменно и по звонку 10:00–18:00</div>'
+    +'<div class="section-label">Умения / Знания</div>'
+    +'<div>'+ME.skills.map(function(s){ return '<span class="badge">'+s+'</span>'; }).join('')+'</div>'
+    +'<div class="section-label">Кто заменяет</div>'
+    +'<div>'+ME.replacedBy.map(function(r){ return repBadge(r,ME.bg,ME.textc); }).join('')+'</div>'
+    +'<div class="section-label">Кого заменяет</div>'
+    +'<div><span class="rep-badge" style="background:'+ME.bg+';color:'+ME.textc+';border-color:'+ME.textc+'60">Всех сотрудников</span></div>'
+    +'</div>';
+  html += people.map(function(p){
+    return '<div class="card">'
+      +'<div class="card-head">'
+      +'<div class="avatar" style="background:'+p.bg+';color:'+p.textc+'">'+initials(p.name)+'</div>'
+      +'<div><div class="name">'+p.name+'</div><div class="role">'+p.role+'</div></div>'
+      +'</div>'
+      +'<div>'+p.tags.map(function(t){ return '<span class="tag" style="background:'+p.bg+';color:'+p.textc+';border:1px solid '+p.textc+'40">'+t+'</span>'; }).join('')+'<span class="'+pillClass(p.sched)+'" style="margin-left:4px">'+p.sched+'</span></div>'
+      +'<div class="time-block">'
+      +'<div class="time-row"><span class="time-val">'+p.time+'</span></div>'
+      +'<div class="time-row"><span class="time-day">перерыв:</span><span style="font-size:13px;color:var(--g-muted)">'+p.brk+'</span></div>'
+      +'</div>'
+      +'<div class="section-label">Умения / Знания</div>'
+      +'<div>'+p.skills.map(function(s){ return '<span class="badge">'+s+'</span>'; }).join('')+'</div>'
+      +'<div class="section-label">Кто заменяет</div>'
+      +'<div>'+(p.replacedBy.length ? p.replacedBy.map(function(r){ return repBadge(r,p.bg,p.textc); }).join('') : '<span style="font-size:13px;color:var(--g-muted)">—</span>')+'</div>'
+      +(p.replaces.length ? '<div class="section-label">Кого заменяет</div><div>'+p.replaces.map(function(r){ return repBadge(r,p.bg,p.textc); }).join('')+'</div>' : '')
+      +'</div>';
+  }).join('');
+  grid.innerHTML = html;
+}
+
+function renderSchedule(){
+  var body = document.getElementById('sched-body');
+  var html = '<tr><td colspan="4" class="sched-section">Руководство</td></tr>'
+    +'<tr>'
+    +'<td><strong style="font-size:15px">'+ME.name+'</strong><div style="font-size:13px;color:var(--g-muted)">'+ME.role+'</div></td>'
+    +'<td><span class="pill pill-boss">гибкий</span></td>'
+    +'<td><div style="font-size:14px;line-height:1.8"><b>Пн, Ср, Пт:</b> 12:00–22:00<br><b>Вт, Чт:</b> 10:00–19:00<br><b>Сб, Вс:</b> 11:00–17:00</div></td>'
+    +'<td><div style="font-size:13px;line-height:1.8;color:var(--g-muted)">📞 08:00–23:00<br>✉️ 10:00–18:00</div></td>'
+    +'</tr>';
+  schedGroups.filter(function(g){ return g!=="Руководство"; }).forEach(function(group){
+    var members = people.filter(function(p){ return p.schedGroup===group; });
+    if(!members.length) return;
+    html += '<tr><td colspan="4" class="sched-section">'+group+'</td></tr>';
+    members.forEach(function(p){
+      if(p.name==="Галиновская Эльвира"){
+        html+='<tr><td rowspan="3" style="vertical-align:top;padding-top:10px"><strong style="font-size:15px">'+p.name+'</strong><div style="font-size:13px;color:var(--g-muted)">'+p.role+'</div></td><td><span class="pill pill-52">пн–пт</span></td><td>10:00–17:00</td><td>12:00–13:00</td></tr><tr><td><span class="pill pill-wknd">сб</span></td><td>08:00–17:00</td><td>12:00–13:00</td></tr><tr><td><span class="pill pill-wknd">вс</span></td><td>15:00–23:00</td><td>30 мин</td></tr>';
+      } else if(p.name==="Мифтахов Виктор"){
+        html+='<tr><td rowspan="3" style="vertical-align:top;padding-top:10px"><strong style="font-size:15px">'+p.name+'</strong><div style="font-size:13px;color:var(--g-muted)">'+p.role+'</div></td><td><span class="pill pill-52">пн–пт</span></td><td>08:00–17:00</td><td>12:00–13:00</td></tr><tr><td><span class="pill pill-wknd">сб</span></td><td>14:00–23:00</td><td>12:00–13:00</td></tr><tr><td><span class="pill pill-wknd">вс</span></td><td>08:00–17:00</td><td>12:00–13:00</td></tr>';
+      } else {
+        html+='<tr><td><strong style="font-size:15px">'+p.name+'</strong><div style="font-size:13px;color:var(--g-muted)">'+p.role+'</div></td><td><span class="'+pillClass(p.sched)+'">'+p.sched+'</span></td><td>'+p.time+'</td><td>'+p.brk+'</td></tr>';
+      }
+    });
+  });
+  body.innerHTML = html;
+}
+
+function renderReplace(){
+  var body = document.getElementById('rep-body');
+  var all = [ME].concat(people);
+  body.innerHTML = all.map(function(p){
+    var isBoss = p===ME, bg=p.bg, textc=p.textc;
+    var rbHtml = p.replacedBy.length
+      ? p.replacedBy.map(function(r){ return '<span class="rep-badge" style="background:'+bg+';color:'+textc+';border-color:'+textc+'60;font-size:12px">'+r.name+(r.note?' · '+r.note:'')+'</span>'; }).join('')
+      : '<span style="color:var(--g-muted);font-size:13px">—</span>';
+    var rpHtml = isBoss
+      ? '<span class="rep-badge" style="background:'+bg+';color:'+textc+';border-color:'+textc+'60;font-size:12px">Всех сотрудников</span>'
+      : (p.replaces.length
+        ? p.replaces.map(function(r){ return '<span class="rep-badge" style="background:var(--g-wash);color:var(--g-muted);border-color:var(--g-pale);font-size:12px">'+r.name+(r.note?' · '+r.note:'')+'</span>'; }).join('')
+        : '<span style="color:var(--g-muted);font-size:13px">—</span>');
+    var timeStr = isBoss ? 'пн/ср/пт 12–22 · вт/чт 10–19 · сб/вс 11–17' : p.time;
+    return '<tr'+(isBoss?' style="background:var(--g-wash)"':'')+'>'
+      +'<td><div style="font-weight:500;font-size:15px;color:var(--g-ink)">'+p.name+'</div>'
+      +'<div style="font-size:13px;color:var(--g-muted)">'+p.role+'</div>'
+      +'<div style="margin-top:4px"><span class="'+pillClass(p.sched)+'" style="font-size:12px">'+p.sched+'</span> <span style="font-size:12px;color:var(--g-muted)">'+timeStr+'</span></div></td>'
+      +'<td style="max-width:180px">'+rbHtml+'</td>'
+      +'<td style="max-width:180px">'+rpHtml+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+renderCards();
+renderSchedule();
+renderReplace();
+
+}); // DOMContentLoaded
+
+// show — глобальная, вызывается из onclick атрибутов
+function show(id, btn){
+  var views = document.getElementsByClassName('view');
+  for(var i=0; i<views.length; i++){ views[i].classList.remove('active'); }
+  var tabs = document.getElementsByClassName('tab');
+  for(var j=0; j<tabs.length; j++){ tabs[j].classList.remove('active'); }
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
